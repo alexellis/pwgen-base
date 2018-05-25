@@ -5,7 +5,7 @@ ENV REFRESHED_AT 2018-Apr-15
 
 RUN [ "cross-build-start" ]
 
-ADD https://github.com/openfaas/faas/releases/download/0.7.9/fwatchdog-armhf /usr/bin/fwatchdog
+ADD https://github.com/openfaas/faas/releases/download/0.8.2/fwatchdog-armhf /usr/bin/fwatchdog
 RUN chmod +x /usr/bin/fwatchdog
 
 RUN [ "cross-build-end" ]
