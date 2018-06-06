@@ -61,10 +61,10 @@ try {
         usernameVariable: 'DOCKER_HUB_USER',
         passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
           sh """
-            docker build --no-cache -t ${env.DOCKER_HUB_USER}/${imageName}:armhf -f ${dockerFile}.armhf .
-            docker tag ${env.DOCKER_HUB_USER}/${imageName}:armhf ${env.DOCKER_HUB_USER}/${imageName}:${date}-armhf
-            docker tag ${env.DOCKER_HUB_USER}/${imageName}:armhf registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:armhf
-            docker tag ${env.DOCKER_HUB_USER}/${imageName}:armhf registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:${date}-armhf
+            docker build --no-cache -t ${env.DOCKER_HUB_USER}/${imageName}:latest-armhf -f ${dockerFile}.armhf .
+            docker tag ${env.DOCKER_HUB_USER}/${imageName}:latest-armhf ${env.DOCKER_HUB_USER}/${imageName}:${date}-armhf
+            docker tag ${env.DOCKER_HUB_USER}/${imageName}:latest-armhf registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:latest-armhf
+            docker tag ${env.DOCKER_HUB_USER}/${imageName}:latest-armhf registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:${date}-armhf
           """
       }
     }
@@ -77,10 +77,10 @@ try {
         passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
           sh """
             docker login -u ${env.DOCKER_HUB_USER} -p ${env.DOCKER_HUB_PASSWORD}
-            docker push ${env.DOCKER_HUB_USER}/${imageName}:armhf
+            docker push ${env.DOCKER_HUB_USER}/${imageName}:latest-armhf
             docker push ${env.DOCKER_HUB_USER}/${imageName}:${date}-armhf
             docker login registry.gitlab.com -u ${env.DOCKER_HUB_USER} -p ${env.DOCKER_HUB_PASSWORD}
-            docker push registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:armhf
+            docker push registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:latest-armhf
             docker push registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:${date}-armhf
           """
       }
