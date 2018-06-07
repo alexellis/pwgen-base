@@ -15,29 +15,25 @@ podTemplate(
 { try {} catch(err) {} finally { node('build') {
 try {
   date = new Date().format('yyyy-MM-dd')
-  imageName = 'faas_base'
+  imageName = 'faas_pwgen'
   dockerFile = 'Dockerfile'
+  repouser = 'playgali'
   stage ('checkout') { container('debian') {
-    dir('faas_base') {
-      git branch: "master", credentialsId: 'gitlab-ro-http', url: 'https://gitlab.com/playgali/faas_base.git'
+    dir('faas_pwgen') {
+      git branch: "master", credentialsId: 'gitlab-ro-http', url: 'https://gitlab.com/playgali/faas_pwgen.git'
     }
   }}
   stage ('building image (x64)') { container('debian') {
-    dir('faas_base') {
-      withCredentials([[$class: 'UsernamePasswordMultiBinding',
-        credentialsId: 'dockerhub',
-        usernameVariable: 'DOCKER_HUB_USER',
-        passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
-          sh """
-            docker build --no-cache -t ${env.DOCKER_HUB_USER}/${imageName}:latest -f ${dockerFile} .
-            docker tag ${env.DOCKER_HUB_USER}/${imageName}:latest ${env.DOCKER_HUB_USER}/${imageName}:${date}
-            docker tag ${env.DOCKER_HUB_USER}/${imageName}:latest registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:latest
-            docker tag ${env.DOCKER_HUB_USER}/${imageName}:latest registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:${date}
-          """
-      }
+    dir('faas_pwgen') {
+      sh """
+        docker build --no-cache -t ${repouser}/${imageName}:latest -f ${dockerFile} .
+        docker tag ${repouser}/${imageName}:latest ${repouser}/${imageName}:${date}
+        docker tag ${repouser}/${imageName}:latest registry.gitlab.com/${repouser}/${imageName}:latest
+        docker tag ${repouser}/${imageName}:latest registry.gitlab.com/${repouser}/${imageName}:${date}
+      """
     }
   }}
-  stage ('publishing image (x64)') { container('debian') {
+  stage ('publishing image (x64) - DockerHUB') { container('debian') {
     dir('galik8s') {
       withCredentials([[$class: 'UsernamePasswordMultiBinding',
         credentialsId: 'dockerhub',
@@ -47,6 +43,17 @@ try {
             docker login -u ${env.DOCKER_HUB_USER} -p ${env.DOCKER_HUB_PASSWORD}
             docker push ${env.DOCKER_HUB_USER}/${imageName}:latest
             docker push ${env.DOCKER_HUB_USER}/${imageName}:${date}
+          """
+      }
+    }
+  }}
+  stage ('publishing image (x64) - GitLab') { container('debian') {
+    dir('galik8s') {
+      withCredentials([[$class: 'UsernamePasswordMultiBinding',
+        credentialsId: 'gitlab-registry',
+        usernameVariable: 'DOCKER_HUB_USER',
+        passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
+          sh """
             docker login registry.gitlab.com -u ${env.DOCKER_HUB_USER} -p ${env.DOCKER_HUB_PASSWORD}
             docker push registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:latest
             docker push registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:${date}
@@ -55,21 +62,16 @@ try {
     }
   }}
   stage ('building image (armhf)') { container('debian') {
-    dir('faas_base') {
-      withCredentials([[$class: 'UsernamePasswordMultiBinding',
-        credentialsId: 'dockerhub',
-        usernameVariable: 'DOCKER_HUB_USER',
-        passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
-          sh """
-            docker build --no-cache -t ${env.DOCKER_HUB_USER}/${imageName}:latest-armhf -f ${dockerFile}.armhf .
-            docker tag ${env.DOCKER_HUB_USER}/${imageName}:latest-armhf ${env.DOCKER_HUB_USER}/${imageName}:${date}-armhf
-            docker tag ${env.DOCKER_HUB_USER}/${imageName}:latest-armhf registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:latest-armhf
-            docker tag ${env.DOCKER_HUB_USER}/${imageName}:latest-armhf registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:${date}-armhf
-          """
-      }
+    dir('faas_pwgen') {
+      sh """
+        docker build --no-cache -t ${repouser}/${imageName}:latest-armhf -f ${dockerFile}.armhf .
+        docker tag ${repouser}/${imageName}:latest-armhf ${repouser}/${imageName}:${date}-armhf
+        docker tag ${repouser}/${imageName}:latest-armhf registry.gitlab.com/${repouser}/${imageName}:latest-armhf
+        docker tag ${repouser}/${imageName}:latest-armhf registry.gitlab.com/${repouser}/${imageName}:${date}-armhf
+      """
     }
   }}
-  stage ('publishing image (armhf)') { container('debian') {
+  stage ('publishing image (armhf) - DockerHUB') { container('debian') {
     dir('galik8s') {
       withCredentials([[$class: 'UsernamePasswordMultiBinding',
         credentialsId: 'dockerhub',
@@ -79,6 +81,17 @@ try {
             docker login -u ${env.DOCKER_HUB_USER} -p ${env.DOCKER_HUB_PASSWORD}
             docker push ${env.DOCKER_HUB_USER}/${imageName}:latest-armhf
             docker push ${env.DOCKER_HUB_USER}/${imageName}:${date}-armhf
+          """
+      }
+    }
+  }}
+  stage ('publishing image (armhf) - GitLab') { container('debian') {
+    dir('galik8s') {
+      withCredentials([[$class: 'UsernamePasswordMultiBinding',
+        credentialsId: 'gitlab-registry',
+        usernameVariable: 'DOCKER_HUB_USER',
+        passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
+          sh """
             docker login registry.gitlab.com -u ${env.DOCKER_HUB_USER} -p ${env.DOCKER_HUB_PASSWORD}
             docker push registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:latest-armhf
             docker push registry.gitlab.com/${env.DOCKER_HUB_USER}/${imageName}:${date}-armhf
