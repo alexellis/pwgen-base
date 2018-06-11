@@ -15,16 +15,16 @@ podTemplate(
 { try {} catch(err) {} finally { node('build') {
 try {
   date = new Date().format('yyyy-MM-dd')
-  imageName = 'faas_pwgen'
+  imageName = 'faas_base'
   dockerFile = 'Dockerfile'
   repouser = 'playgali'
   stage ('checkout') { container('debian') {
-    dir('faas_pwgen') {
-      git branch: "master", credentialsId: 'gitlab-ro-http', url: 'https://gitlab.com/playgali/faas_pwgen.git'
+    dir('faas_base') {
+      git branch: "master", credentialsId: 'gitlab-ro-http', url: 'https://gitlab.com/playgali/faas_base.git'
     }
   }}
   stage ('building image (x64)') { container('debian') {
-    dir('faas_pwgen') {
+    dir('faas_base') {
       sh """
         docker build --no-cache -t ${repouser}/${imageName}:latest -f ${dockerFile} .
         docker tag ${repouser}/${imageName}:latest ${repouser}/${imageName}:${date}
@@ -62,7 +62,7 @@ try {
     }
   }}
   stage ('building image (armhf)') { container('debian') {
-    dir('faas_pwgen') {
+    dir('faas_base') {
       sh """
         docker build --no-cache -t ${repouser}/${imageName}:latest-armhf -f ${dockerFile}.armhf .
         docker tag ${repouser}/${imageName}:latest-armhf ${repouser}/${imageName}:${date}-armhf
